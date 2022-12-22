@@ -16,7 +16,7 @@ const validateEmail = (email) => {
  * @returns {object} An object containing all the user's data minus the password and updatedAt.
  */
 const getRelevantUserDetails = (doc) => {
-    const { password, __v, ...otherDetails} = doc;
+    const { password, __v, ...otherDetails } = doc;
     return otherDetails;
 }
 

@@ -5,6 +5,7 @@ const connectDB = require('./src/db/connect');
 require('dotenv').config();
 const auth = require('./src/routes/auth');
 const users = require('./src/routes/users');
+const tasks = require('./src/routes/tasks');
 
 // Middleware
 app.use(cors());
@@ -13,6 +14,7 @@ app.use(express.json());
 // Routes
 app.use('/api/v1/auth', auth);
 app.use('/api/v1/users', users);
+app.use('/api/v1/tasks', tasks);
 
 const port = process.env.PORT || 3001;
 
