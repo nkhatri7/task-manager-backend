@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getFormattedDateTime } = require('../utils/date.utils');
 
 const TaskSchema = new mongoose.Schema({
     userId: {
@@ -22,8 +23,14 @@ const TaskSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
-}, {
-    timestamps: true,
+    createdAt: {
+        type: String,
+        default: getFormattedDateTime(new Date()),
+    },
+    updatedAt: {
+        type: String,
+        default: getFormattedDateTime(new Date()),
+    }
 });
 
 const Task = mongoose.model('Task', TaskSchema);

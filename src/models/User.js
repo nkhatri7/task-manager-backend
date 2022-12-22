@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { getFormattedDate } = require('../utils/date.utils');
 
 const UserSchema = new mongoose.Schema({
     name: {
@@ -21,8 +22,10 @@ const UserSchema = new mongoose.Schema({
         trim: true,
         minLength: [8, 'Password must be at least 8 characters long.'],
     },
-}, {
-    timestamps: true,
+    createdAt: {
+        type: String,
+        default: getFormattedDate(new Date()),
+    }
 });
 
 const User = mongoose.model('User', UserSchema);
