@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const Task = require('../models/Task');
 const asyncWrapper = require('../middleware/async');
 const { getRelevantUserDetails, validateEmail, encryptPassword } = require('../middleware/auth');
 const { createCustomError } = require('../errors/custom-error');
@@ -30,9 +31,22 @@ const deleteUser = asyncWrapper(async (req, res, next) => {
         return next(createCustomError(`No user with ID: ${id}`, 404));
     }
 
+    // Delete all tasks for user
+    deleteUserTasks(user.tasks);
+    // Delete user
     await User.findByIdAndDelete(id);
     res.status(200).send('User deleted');
 });
+
+/**
+ * Deletes all the tasks in the database associated with a user.
+ * @param {string[]} userTasks An array of the IDs for each task in the database for a user.
+ */
+const deleteUserTasks = (userTasks) => {
+    userTasks.forEach(taskId => {
+        Task.findByIdAndDelete(taskId);
+    });
+};
 
 /**
  * Updates the user's name.
@@ -41,7 +55,7 @@ const updateUserName = asyncWrapper(async (req, res, next) => {
     const { id } = req.params;
     const user = await User.findByIdAndUpdate(id, req.body, {
         new: true,
-        runValidators: true
+        runValidators: true,
     });
 
     if (!user) {
@@ -64,7 +78,7 @@ const updateUserEmail = asyncWrapper(async (req, res, next) => {
 
     const user = await User.findByIdAndUpdate(id, req.body, {
         new: true,
-        runValidators: true
+        runValidators: true,
     });
     if (!user) {
         return next(createCustomError(`No user with ID: ${id}`, 404));
@@ -84,7 +98,7 @@ const updateUserPassword = asyncWrapper(async (req, res, next) => {
         password: encryptedPassword
     }, {
         new: true,
-        runValidators: true
+        runValidators: true,
     });
     if (!user) {
         return next(createCustomError(`No user with ID: ${id}`, 404));
@@ -94,4 +108,32 @@ const updateUserPassword = asyncWrapper(async (req, res, next) => {
     res.status(200).json(relevantDetails);
 });
 
-module.exports = { getUser, deleteUser, updateUserName, updateUserEmail, updateUserPassword };
+/**
+ * Updates the order of the user's tasks.
+ */
+const updateUserTasksOrder = asyncWrapper(async (req, res, next) => {
+    const { id } = req.params;
+    const user = await User.findByIdAndUpdate(id, {
+        $set: {
+            tasks: req.body.tasks,
+        }
+    }, {
+        new: true,
+        runValidators: true,
+    });
+    if (!user) {
+        return next(createCustomError(`No user with ID: ${id}`, 404));
+    }
+
+    const relevantDetails = getRelevantUserDetails(user._doc);
+    res.status(200).json(relevantDetails);
+});
+
+module.exports = { 
+    getUser, 
+    deleteUser, 
+    updateUserName, 
+    updateUserEmail, 
+    updateUserPassword,
+    updateUserTasksOrder,
+};

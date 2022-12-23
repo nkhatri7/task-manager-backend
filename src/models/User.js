@@ -22,10 +22,14 @@ const UserSchema = new mongoose.Schema({
         trim: true,
         minLength: [8, 'Password must be at least 8 characters long.'],
     },
+    tasks: {
+        type: Array,
+        default: [],
+    },
     createdAt: {
         type: String,
         default: getFormattedDate(new Date()),
-    }
+    },
 });
 
 const User = mongoose.model('User', UserSchema);
