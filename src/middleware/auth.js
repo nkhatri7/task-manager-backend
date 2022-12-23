@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
  * @returns {boolean} `true` or `false` based on the validity of the given email.
  */
 const validateEmail = (email) => {
-    const regex = new RegExp('[a-z0-9]+@[a-z]+\.[a-z]{2,3}');
+    const regex = new RegExp(/[a-z0-9\.]+@[a-z]+\.[a-z]{2,3}$/);
     return regex.test(email);
 };
 

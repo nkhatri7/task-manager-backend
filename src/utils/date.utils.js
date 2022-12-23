@@ -21,12 +21,12 @@ const getFormattedDateTime = (date) => {
 };
 
 /**
- * Adds a 0 in front of a number less than 10.
- * @param {number} num The number that needs to be formatted
+ * Adds a 0 in front of positive numbers less than 10.
+ * @param {number} num The number that needs to be formatted (expected to be positive)
  * @returns A formatted string of the given number.
  */
 const formatNumber = (num) => {
-    return num < 10 ? `0${num}` : `${num}`;
+    return num < 10 && num > 0 ? `0${num}` : `${num}`;
 };
 
-module.exports = { getFormattedDate, getFormattedDateTime };
+module.exports = { getFormattedDate, getFormattedDateTime, formatNumber };
