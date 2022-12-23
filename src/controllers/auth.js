@@ -2,7 +2,6 @@ const User = require('../models/User');
 const asyncWrapper = require('../middleware/async');
 const { getRelevantUserDetails, validateEmail, encryptPassword } = require('../middleware/auth');
 const { createCustomError } = require('../errors/custom-error');
-const { updateUserPassword } = require('../controllers/users');
 const bcrypt = require('bcrypt');
 
 /**
@@ -54,6 +53,28 @@ const signInUser = asyncWrapper(async (req, res, next) => {
 });
 
 /**
+ * Updates the user's email address.
+ */
+const updateUserEmail = asyncWrapper(async (req, res, next) => {
+    const { id } = req.params;
+    const validEmail = validateEmail(req.body.email);
+    if (!validEmail) {
+        return next(createCustomError('Invalid email format.', 406));
+    }
+
+    const user = await User.findByIdAndUpdate(id, req.body, {
+        new: true,
+        runValidators: true,
+    });
+    if (!user) {
+        return next(createCustomError(`No user with ID: ${id}`, 404));
+    }
+
+    const relevantDetails = getRelevantUserDetails(user._doc);
+    res.status(200).json(relevantDetails);
+});
+
+/**
  * Checks if the old password entered by the user matches the password in the database.
  */
 const checkPasswordMatches = asyncWrapper(async (req, res, next) => {
@@ -73,4 +94,24 @@ const checkPasswordMatches = asyncWrapper(async (req, res, next) => {
     return updateUserPassword(req, res, next);
 });
 
-module.exports = { createUser, signInUser, checkPasswordMatches };
+/**
+ * Updates the user's password in the database.
+ */
+const updateUserPassword = asyncWrapper(async (req, res, next) => {
+    const { id } = req.params;
+    const encryptedPassword = await encryptPassword(req.body.newPassword);
+    const user = await User.findByIdAndUpdate(id, {
+        password: encryptedPassword
+    }, {
+        new: true,
+        runValidators: true,
+    });
+    if (!user) {
+        return next(createCustomError(`No user with ID: ${id}`, 404));
+    }
+
+    const relevantDetails = getRelevantUserDetails(user._doc);
+    res.status(200).json(relevantDetails);
+});
+
+module.exports = { createUser, signInUser, updateUserEmail, checkPasswordMatches, };
