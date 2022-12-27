@@ -1,4 +1,4 @@
-# Task Management App Backend
+# Taskr Backend
 
 ## Project Information
 
