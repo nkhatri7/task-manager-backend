@@ -3,11 +3,11 @@
  * @param {Function} fn The function that needs to be wrapped
  */
 const asyncWrapper = (fn) => {
-    return async (req, res, next) => {
+    return async (req, res) => {
         try {
-            await fn(req, res, next);
-        } catch (error) {
-            next(error);
+            await fn(req, res);
+        } catch (err) {
+            res.status(500).json(err);
         }
     }
 };

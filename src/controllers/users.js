@@ -1,41 +1,40 @@
 const User = require('../models/User');
 const Task = require('../models/Task');
 const asyncWrapper = require('../middleware/async');
-const { getRelevantUserDetails, validateEmail, encryptPassword } = require('../middleware/auth');
-const { createCustomError } = require('../errors/custom-error');
+const { getRelevantUserDetails } = require('../middleware/auth');
 
 /**
  * Gets the user with a given ID if the user exists.
  */
-const getUser = asyncWrapper(async (req, res, next) => {
+const getUser = asyncWrapper(async (req, res) => {
     const { id } = req.params;
     // Get user with the ID from the request
     const user = await User.findById(id);
     // If the user doesn't exist/isn't found, return an error
     if (!user) {
-        return next(createCustomError(`No user with the ID: ${id}`, 404));
+        res.status(404).json(`No user with the ID: ${id}`);
+    } else {
+        const relevantDetails = getRelevantUserDetails(user._doc);
+        res.status(200).json(relevantDetails);
     }
-
-    const relevantDetails = getRelevantUserDetails(user._doc);
-    res.status(200).json(relevantDetails);
 });
 
 /**
  * Deletes the user with a given ID from the database.
  */
-const deleteUser = asyncWrapper(async (req, res, next) => {
+const deleteUser = asyncWrapper(async (req, res) => {
     const { id } = req.params;
     const user = await User.findById(id);
     // If the user never existed, return an error
     if (!user) {
-        return next(createCustomError(`No user with ID: ${id}`, 404));
+        res.status(404).json(`No user with the ID: ${id}`);
+    } else {
+        // Delete all tasks for user
+        deleteUserTasks(user.tasks);
+        // Delete user
+        await User.findByIdAndDelete(id);
+        res.status(200).send('User deleted');
     }
-
-    // Delete all tasks for user
-    deleteUserTasks(user.tasks);
-    // Delete user
-    await User.findByIdAndDelete(id);
-    res.status(200).send('User deleted');
 });
 
 /**
@@ -51,7 +50,7 @@ const deleteUserTasks = (userTasks) => {
 /**
  * Updates the user's name.
  */
-const updateUserName = asyncWrapper(async (req, res, next) => {
+const updateUserName = asyncWrapper(async (req, res) => {
     const { id } = req.params;
     const user = await User.findByIdAndUpdate(id, req.body, {
         new: true,
@@ -59,17 +58,17 @@ const updateUserName = asyncWrapper(async (req, res, next) => {
     });
 
     if (!user) {
-        return next(createCustomError(`No user with ID: ${id}`, 404));
+        res.status(404).json(`No user with the ID: ${id}`);
+    } else {
+        const relevantDetails = getRelevantUserDetails(user._doc);
+        res.status(200).json(relevantDetails);
     }
-
-    const relevantDetails = getRelevantUserDetails(user._doc);
-    res.status(200).json(relevantDetails);
 });
 
 /**
  * Updates the order of the user's tasks.
  */
-const updateUserTasksOrder = asyncWrapper(async (req, res, next) => {
+const updateUserTasksOrder = asyncWrapper(async (req, res) => {
     const { id } = req.params;
     const user = await User.findByIdAndUpdate(id, {
         $set: {
@@ -80,11 +79,11 @@ const updateUserTasksOrder = asyncWrapper(async (req, res, next) => {
         runValidators: true,
     });
     if (!user) {
-        return next(createCustomError(`No user with ID: ${id}`, 404));
+        res.status(404).json(`No user with the ID: ${id}`);
+    } else {
+        const relevantDetails = getRelevantUserDetails(user._doc);
+        res.status(200).json(relevantDetails);
     }
-
-    const relevantDetails = getRelevantUserDetails(user._doc);
-    res.status(200).json(relevantDetails);
 });
 
 module.exports = { 
