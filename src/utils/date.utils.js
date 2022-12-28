@@ -1,4 +1,16 @@
 /**
+ * Formats the given date into the following format MMM yyyy.
+ * @param {Date} date the date that needs to be formatted
+ * @returns {String} A formatted date string.
+ */
+const getUserAccountCreationDate = (date) => {
+    const monthAbbrevs = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
+        'Nov', 'Dec'];
+    const monthName = monthAbbrevs[date.getMonth()];
+    return `${monthName} ${date.getFullYear()}`;
+};
+
+/**
  * Formats the given date into the following format: dd/MM/yyyy.
  * @param {Date} date the date that needs to be formatted
  * @returns {String} A formatted date string.
@@ -29,4 +41,9 @@ const formatNumber = (num) => {
     return num < 10 && num > 0 ? `0${num}` : `${num}`;
 };
 
-module.exports = { getFormattedDate, getFormattedDateTime, formatNumber };
+module.exports = { 
+    getUserAccountCreationDate, 
+    getFormattedDate, 
+    getFormattedDateTime, 
+    formatNumber,
+};

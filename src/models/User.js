@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { getFormattedDate } = require('../utils/date.utils');
+const { getUserAccountCreationDate } = require('../utils/date.utils');
 
 const UserSchema = new mongoose.Schema({
     name: {
@@ -28,7 +28,7 @@ const UserSchema = new mongoose.Schema({
     },
     createdAt: {
         type: String,
-        default: getFormattedDate(new Date()),
+        default: getUserAccountCreationDate(new Date()),
     },
 });
 
