@@ -13,11 +13,9 @@ const TaskSchema = new mongoose.Schema({
         minLength: [1, 'Task text cannot be less than one character.'],
         maxLength: [150, 'Task text cannot be more than 150 characters.'],
     },
-    dateDue: {
+    dueDate: {
         type: String,
-    },
-    timeDue: {
-        type: String,
+        default: '',
     },
     completed: {
         type: Boolean,
