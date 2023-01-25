@@ -12,6 +12,9 @@ const createTask = asyncWrapper(async (req, res) => {
     if (!user) {
         res.status(404).json(`No user with ID: ${req.body.userId}`);
     } else {
+        const creationDate = new Date();
+        req.body.createdAt = getFormattedDateTime(creationDate);
+        req.body.updatedAt = getFormattedDateTime(creationDate);
         const task = await Task.create(req.body);
         const updatedUser = await addTaskToUser(task.id, task.userId);
         res.status(201).json({
