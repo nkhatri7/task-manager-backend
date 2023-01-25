@@ -1,6 +1,7 @@
 const User = require('../models/User');
 const asyncWrapper = require('../middleware/async');
 const { getRelevantUserDetails, validateEmail, encryptPassword } = require('../middleware/auth');
+const { getUserAccountCreationDate } = require('../utils/date.utils');
 const bcrypt = require('bcrypt');
 
 /**
@@ -26,6 +27,7 @@ const createUser = asyncWrapper(async (req, res) => {
                 name: req.body.name,
                 email: req.body.email,
                 password: encryptedPassword,
+                createdAt: getUserAccountCreationDate(new Date()),
             });
             const relevantDetails = getRelevantUserDetails(user._doc);
             res.status(201).json(relevantDetails);
