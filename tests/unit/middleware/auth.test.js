@@ -1,4 +1,7 @@
-const { validateEmail, getRelevantUserDetails } = require('../../../src/middleware/auth');
+const { 
+    validateEmail, 
+    getRelevantUserDetails, 
+} = require('../../../src/middleware/auth');
 
 describe('validateEmail', () => {
     test('Deals with regular email format', () => {

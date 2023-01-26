@@ -39,7 +39,8 @@ const deleteUser = asyncWrapper(async (req, res) => {
 
 /**
  * Deletes all the tasks in the database associated with a user.
- * @param {string[]} userTasks An array of the IDs for each task in the database for a user.
+ * @param {string[]} userTasks 
+ * An array of the IDs for each task in the database for a user.
  */
 const deleteUserTasks = (userTasks) => {
     userTasks.forEach(taskId => {

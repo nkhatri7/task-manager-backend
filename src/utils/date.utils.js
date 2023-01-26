@@ -1,5 +1,5 @@
-const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct',
-'Nov', 'Dec'];
+const MONTH_ABBREVIATIONS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 
+'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
 /**
  * Formats the given date into the following format MMM yyyy.
@@ -37,7 +37,8 @@ const getFormattedDateTime = (date) => {
 };
 
 /**
- * Formats the given datetime into the following format hh:mm:ss AM/PM (12 hour time).
+ * Formats the given datetime into the following format hh:mm:ss AM/PM (12 hour 
+ * time).
  * @param {Date} date The date that needs to be formatted
  * @returns {string} A formatted time string.
  */
@@ -55,8 +56,9 @@ const getTimeString = (date) => {
 
 /**
  * Adds a 0 in front of positive numbers less than 10.
- * @param {number} num The number that needs to be formatted (expected to be positive)
- * @returns A formatted string of the given number.
+ * @param {number} num 
+ * The number that needs to be formatted (expected to be positive)
+ * @returns {string} A formatted string of the given number.
  */
 const formatNumber = (num) => {
     return num < 10 && num >= 0 ? `0${num}` : `${num}`;

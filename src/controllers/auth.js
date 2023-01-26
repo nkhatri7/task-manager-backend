@@ -1,6 +1,10 @@
 const User = require('../models/User');
 const asyncWrapper = require('../middleware/async');
-const { getRelevantUserDetails, validateEmail, encryptPassword } = require('../middleware/auth');
+const { 
+    getRelevantUserDetails, 
+    validateEmail, 
+    encryptPassword 
+} = require('../middleware/auth');
 const { getUserAccountCreationDate } = require('../utils/date.utils');
 const bcrypt = require('bcrypt');
 
@@ -10,11 +14,12 @@ const bcrypt = require('bcrypt');
 const createUser = asyncWrapper(async (req, res) => {
     // First, check if account with email already exists
     const existingUser = await User.findOne({ email: req.body.email });
-    // If there is an existing user, return an error stating that an account with the email already
-    // exists
+    // If there is an existing user, return an error stating that an account 
+    // with the email already exists
     if (existingUser) {
-        const errorMsg = `Account with the email '${req.body.email}' already exists. Please sign in`
-                + ` using this email or create an account with another email.`;
+        const errorMsg = `Account with the email '${req.body.email}' already`
+                + ` exists. Please sign in using this email or create an`
+                + ` account with another email.`;
         res.status(403).json(errorMsg);
     } else {
         // Check if email is valid
@@ -36,18 +41,20 @@ const createUser = asyncWrapper(async (req, res) => {
 });
 
 /**
- * Checks whether the given email and password from the request are valid and returns the user data
- * if the details are valid.
+ * Checks whether the given email and password from the request are valid and 
+ * returns the user data if the details are valid.
  */
 const signInUser = asyncWrapper(async (req, res) => {
     // Check if account with email exists
     const user = await User.findOne({ email: req.body.email });
-    // If account with given email doesn't exist, return an error stating that account doesn't exist
+    // If account with given email doesn't exist, return an error stating that 
+    // account doesn't exist
     if (!user) {
         res.status(404).json('Account with this email does not exist.');
     } else {
         // Check if password is correct
-        const validPassword = await bcrypt.compare(req.body.password, user.password);
+        const validPassword = await bcrypt.compare(req.body.password, 
+                user.password);
         if (!validPassword) {
             res.status(401).json('Password is incorrect.');
         } else {
@@ -80,7 +87,8 @@ const updateUserEmail = asyncWrapper(async (req, res) => {
 });
 
 /**
- * Checks if the old password entered by the user matches the password in the database.
+ * Checks if the old password entered by the user matches the password in the 
+ * database.
  */
 const checkPasswordMatches = asyncWrapper(async (req, res) => {
     const { id } = req.params;
@@ -89,8 +97,8 @@ const checkPasswordMatches = asyncWrapper(async (req, res) => {
         res.status(404).json(`No user with ID: ${id}`);
     } else {
         // Check if old password entered matches password in database
-        const validPassword = await bcrypt.compare(req.body.oldPassword, user.password);
-        
+        const validPassword = await bcrypt.compare(req.body.oldPassword, 
+                user.password);
         if (!validPassword) {
             res.status(406).json('Current password entered is incorrect.');
         } else {
@@ -119,4 +127,9 @@ const updateUserPassword = asyncWrapper(async (req, res) => {
     }
 });
 
-module.exports = { createUser, signInUser, updateUserEmail, checkPasswordMatches, };
+module.exports = { 
+    createUser, 
+    signInUser, 
+    updateUserEmail, 
+    checkPasswordMatches, 
+};

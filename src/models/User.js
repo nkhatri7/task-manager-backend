@@ -12,7 +12,10 @@ const UserSchema = new mongoose.Schema({
     email: {
         type: String,
         required: [true, 'Must provide email.'],
-        unique: [true, 'Account with email already exists. Use another account or sign in.'],
+        unique: [
+            true, 
+            'Account with email already exists. Use another account or sign in.'
+        ],
         trim: true,
         minLength: [10, 'Email must be at least 10 characters long.'],
     },
