@@ -34,7 +34,6 @@ The code for the first version of this API (`v1`) has been written. I do have pl
 ├───src
 │   ├───controllers (contains code logic for API routes)
 │   ├───db (contains code to connect to database)
-│   ├───errors (contains helper code for errors)
 │   ├───middleware (contains helper code)
 │   ├───models (contains code for models relating to database)
 │   ├───routes (links code logic to API routes)
