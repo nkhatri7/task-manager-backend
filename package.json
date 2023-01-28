@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nkhatri7/task-manager-backend.git"
+    "url": "git+https://github.com/nkhatri7/taskr-backend.git"
   },
   "author": "Neil Khatri",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nkhatri7/task-manager-backend/issues"
+    "url": "https://github.com/nkhatri7/taskr-backend/issues"
   },
-  "homepage": "https://github.com/nkhatri7/task-manager-backend#readme",
+  "homepage": "https://github.com/nkhatri7/taskr-backend#readme",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
