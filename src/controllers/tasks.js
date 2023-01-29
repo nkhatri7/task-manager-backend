@@ -26,8 +26,8 @@ const createTask = asyncWrapper(async (req, res) => {
 
 /**
  * Adds the given task ID to the User with the given user ID.
- * @param {String} taskId The ID of the task
- * @param {String} userId The ID of the User that created this task
+ * @param {string} taskId The ID of the task
+ * @param {string} userId The ID of the User that created this task
  * @returns {Promise<object>} 
  * An updated version of the user object from the database.
  */
@@ -89,8 +89,8 @@ const deleteTask = asyncWrapper(async (req, res) => {
 
 /**
  * Removes the task ID from the User's array of tasks in the database
- * @param {String} taskId The ID of the task
- * @param {String} userId The ID of the User that deleted this task
+ * @param {string} taskId The ID of the task
+ * @param {string} userId The ID of the User that deleted this task
  * @returns {Promise<object>} 
  * An updated version of the user object from the database.
  */
@@ -128,4 +128,10 @@ const updateTask = asyncWrapper(async (req, res) => {
     }
 });
 
-module.exports = { createTask, getUserTasks, getTask, deleteTask, updateTask };
+module.exports = { 
+    createTask, 
+    getUserTasks, 
+    getTask, 
+    deleteTask, 
+    updateTask, 
+};

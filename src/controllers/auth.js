@@ -3,7 +3,7 @@ const asyncWrapper = require('../middleware/async');
 const { 
     getRelevantUserDetails, 
     validateEmail, 
-    encryptPassword 
+    encryptPassword,
 } = require('../middleware/auth');
 const { getUserAccountCreationDate } = require('../utils/date.utils');
 const bcrypt = require('bcrypt');

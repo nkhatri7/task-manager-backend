@@ -2,7 +2,7 @@ const bcrypt = require('bcrypt');
 
 /**
  * Checks if the given email address is in a valid format.
- * @param {String} email the email address being validated
+ * @param {string} email the email address being validated
  * @returns {boolean} 
  * `true` or `false` based on the validity of the given email.
  */
@@ -25,8 +25,8 @@ const getRelevantUserDetails = (doc) => {
 
 /**
  * Encrypts the given password.
- * @param {String} password The password that needs to be encrypted
- * @returns {Promise<String>} The encrypted password.
+ * @param {string} password The password that needs to be encrypted
+ * @returns {Promise<string>} The encrypted password.
  */
 const encryptPassword = async (password) => {
     const salt = await bcrypt.genSalt(10);
@@ -34,4 +34,8 @@ const encryptPassword = async (password) => {
     return hashedPassword;
 };
 
-module.exports = { getRelevantUserDetails, validateEmail, encryptPassword };
+module.exports = {
+    getRelevantUserDetails,
+    validateEmail,
+    encryptPassword,
+};
