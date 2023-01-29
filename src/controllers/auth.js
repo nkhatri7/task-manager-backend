@@ -1,12 +1,12 @@
 const User = require('../models/User');
-const asyncWrapper = require('../middleware/async');
 const { 
-    getRelevantUserDetails, 
+    createUserInDatabase,
     validateEmail, 
-    encryptPassword,
-} = require('../middleware/auth');
-const { getUserAccountCreationDate } = require('../utils/date.utils');
-const bcrypt = require('bcrypt');
+    hashPassword, 
+    comparePassword, 
+} = require('../utils/auth.utils');
+const asyncWrapper = require('../middleware/async');
+const { getRelevantUserDetails } = require('../middleware/auth');
 
 /**
  * Creates a new user in the database if all the details provided are OK.
@@ -17,25 +17,19 @@ const createUser = asyncWrapper(async (req, res) => {
     // If there is an existing user, return an error stating that an account 
     // with the email already exists
     if (existingUser) {
-        const errorMsg = `Account with the email '${req.body.email}' already`
-                + ` exists. Please sign in using this email or create an`
-                + ` account with another email.`;
-        res.status(403).json(errorMsg);
+        const errorMsg = 'Account with this email already exists. Please sign'
+                + ' in using this email or create an account with another'
+                + ' email.';
+        res.status(401).json(errorMsg);
     } else {
-        // Check if email is valid
+        // Otherwise, check if email is valid and then create account if it is
         const validEmail = validateEmail(req.body.email);
-        if (!validEmail) {
-            res.status(406).json('Invalid email.');
+        if (validEmail) {
+            const hashedPassword = await hashPassword(req.body.password);
+            const user = await createUserInDatabase(req.body, hashedPassword);
+            res.status(201).json(user);
         } else {
-            const encryptedPassword = await encryptPassword(req.body.password);
-            const user = await User.create({
-                name: req.body.name,
-                email: req.body.email,
-                password: encryptedPassword,
-                createdAt: getUserAccountCreationDate(new Date()),
-            });
-            const relevantDetails = getRelevantUserDetails(user._doc);
-            res.status(201).json(relevantDetails);
+            res.status(406).json('Email is invalid.');
         }
     }
 });
@@ -50,16 +44,20 @@ const signInUser = asyncWrapper(async (req, res) => {
     // If account with given email doesn't exist, return an error stating that 
     // account doesn't exist
     if (!user) {
-        res.status(404).json('Account with this email does not exist.');
+        const errorMsg = 'An account with this email does not exist. Please' 
+                + ' create an account with this email or sign in with another'
+                + ' email.';
+        res.status(404).json(errorMsg);
     } else {
         // Check if password is correct
-        const validPassword = await bcrypt.compare(req.body.password, 
-                user.password);
-        if (!validPassword) {
-            res.status(401).json('Password is incorrect.');
+        const isPasswordCorrect = await comparePassword(
+            req.body.password,
+            user.password
+        );
+        if (isPasswordCorrect) {
+            res.status(200).json(getRelevantUserDetails(user._doc));
         } else {
-            const relevantDetails = getRelevantUserDetails(user._doc);
-            res.status(200).json(relevantDetails);
+            res.status(401).json('Password is incorrect.');
         }
     }
 });
@@ -80,8 +78,7 @@ const updateUserEmail = asyncWrapper(async (req, res) => {
         if (!user) {
             res.status(404).json(`No user with ID: ${id}`);
         } else {
-            const relevantDetails = getRelevantUserDetails(user._doc);
-            res.status(200).json(relevantDetails);
+            res.status(200).json(getRelevantUserDetails(user._doc));
         }
     }
 });
@@ -96,13 +93,15 @@ const checkPasswordMatches = asyncWrapper(async (req, res) => {
     if (!user) {
         res.status(404).json(`No user with ID: ${id}`);
     } else {
-        // Check if old password entered matches password in database
-        const validPassword = await bcrypt.compare(req.body.oldPassword, 
-                user.password);
-        if (!validPassword) {
-            res.status(406).json('Current password entered is incorrect.');
-        } else {
+        // Check if old password entered matches hashed password in database
+        const isPasswordCorrect = await comparePassword(
+            req.body.oldPassword, 
+            user.password
+        );
+        if (isPasswordCorrect) {
             return updateUserPassword(req, res);
+        } else {
+            res.status(406).json('Current password entered is incorrect.');
         }
     }
 });
@@ -112,18 +111,17 @@ const checkPasswordMatches = asyncWrapper(async (req, res) => {
  */
 const updateUserPassword = asyncWrapper(async (req, res) => {
     const { id } = req.params;
-    const encryptedPassword = await encryptPassword(req.body.newPassword);
+    const hashedPassword = await hashPassword(req.body.newPassword);
     const user = await User.findByIdAndUpdate(id, {
-        password: encryptedPassword
+        password: hashedPassword,
     }, {
         new: true,
         runValidators: true,
     });
-    if (!user) {
-        res.status(404).json(`No user with ID: ${id}`);
+    if (user) {
+        res.status(200).json(getRelevantUserDetails(user._doc));
     } else {
-        const relevantDetails = getRelevantUserDetails(user._doc);
-        res.status(200).json(relevantDetails);
+        res.status(404).json(`No user with ID: ${id}`);
     }
 });
 
