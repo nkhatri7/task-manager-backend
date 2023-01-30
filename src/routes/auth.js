@@ -4,12 +4,12 @@ const {
     createUser, 
     signInUser, 
     updateUserEmail, 
-    checkPasswordMatches, 
+    updateUserPassword, 
 } = require('../controllers/auth');
 
 router.route('/register').post(createUser);
 router.route('/login').post(signInUser);
 router.route('/change-email/:id').patch(updateUserEmail);
-router.route('/change-password/:id').patch(checkPasswordMatches);
+router.route('/change-password/:id').patch(updateUserPassword);
 
 module.exports = router;

@@ -4,18 +4,35 @@ const { getUserAccountCreationDate } = require('./date.utils');
 const { getRelevantUserDetails } = require('../middleware/auth');
 
 /**
- * Creates a user object in the MongoDB database with the given `data` and
- * hashed password.
- * @param {object} data The user's name and email
- * @param {string} hashedPassword The hashed password
- * @returns {object} An object of the relevant user details from the database.
+ * Creates a user object in the MongoDB database with the given `data`.
+ * @param {object} data The user's name, email, and password
+ * @returns {Promise<object>} The new user object from the database.
  */
-const createUserInDatabase = async (data, hashedPassword) => {
+const createUserInDatabase = async (data) => {
+    const hashedPassword = await hashPassword(data.password);
     const user = await User.create({
         name: data.name,
         email: data.email,
         password: hashedPassword,
         createdAt: getUserAccountCreationDate(new Date()),
+    });
+    return getRelevantUserDetails(user._doc);
+};
+
+/**
+ * Updates the user object in the MongoDB database with a hashed version of the
+ * new `password` provided.
+ * @param {string} id The user ID
+ * @param {string} newPassword The user's new password
+ * @returns {Promise<object>} An updated user object from the database.
+ */
+const updatePasswordInDatabase = async (id, newPassword) => {
+    const hashedPassword = await hashPassword(newPassword);
+    const user = await User.findByIdAndUpdate(id, {
+        password: hashedPassword,
+    }, {
+        new: true,
+        runValidators: true,
     });
     return getRelevantUserDetails(user._doc);
 };
@@ -56,6 +73,7 @@ const comparePassword = async (password, hashedPassword) => {
 
 module.exports = {
     createUserInDatabase,
+    updatePasswordInDatabase,
     validateEmail,
     hashPassword,
     comparePassword,

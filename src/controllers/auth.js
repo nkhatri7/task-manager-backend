@@ -1,8 +1,8 @@
 const User = require('../models/User');
 const { 
     createUserInDatabase,
+    updatePasswordInDatabase,
     validateEmail, 
-    hashPassword, 
     comparePassword, 
 } = require('../utils/auth.utils');
 const asyncWrapper = require('../middleware/async');
@@ -25,8 +25,7 @@ const createUser = asyncWrapper(async (req, res) => {
         // Otherwise, check if email is valid and then create account if it is
         const validEmail = validateEmail(req.body.email);
         if (validEmail) {
-            const hashedPassword = await hashPassword(req.body.password);
-            const user = await createUserInDatabase(req.body, hashedPassword);
+            const user = await createUserInDatabase(req.body);
             res.status(201).json(user);
         } else {
             res.status(406).json('Email is invalid.');
@@ -71,7 +70,9 @@ const updateUserEmail = asyncWrapper(async (req, res) => {
     if (!validEmail) {
         res.status(406).json('Invalid email.');
     } else {
-        const user = await User.findByIdAndUpdate(id, req.body, {
+        const user = await User.findByIdAndUpdate(id, {
+            email: req.body.email,
+        }, {
             new: true,
             runValidators: true,
         });
@@ -84,44 +85,26 @@ const updateUserEmail = asyncWrapper(async (req, res) => {
 });
 
 /**
- * Checks if the old password entered by the user matches the password in the 
- * database.
- */
-const checkPasswordMatches = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    if (!user) {
-        res.status(404).json(`No user with ID: ${id}`);
-    } else {
-        // Check if old password entered matches hashed password in database
-        const isPasswordCorrect = await comparePassword(
-            req.body.oldPassword, 
-            user.password
-        );
-        if (isPasswordCorrect) {
-            return updateUserPassword(req, res);
-        } else {
-            res.status(406).json('Current password entered is incorrect.');
-        }
-    }
-});
-
-/**
- * Updates the user's password in the database.
+ * Updates the user's password.
  */
 const updateUserPassword = asyncWrapper(async (req, res) => {
     const { id } = req.params;
-    const hashedPassword = await hashPassword(req.body.newPassword);
-    const user = await User.findByIdAndUpdate(id, {
-        password: hashedPassword,
-    }, {
-        new: true,
-        runValidators: true,
-    });
-    if (user) {
-        res.status(200).json(getRelevantUserDetails(user._doc));
-    } else {
+    const existingUser = await User.findById(id);
+    if (!existingUser) {
         res.status(404).json(`No user with ID: ${id}`);
+    } else {
+        // Check if old password entered is correct
+        const isOldPasswordCorrect = await comparePassword(
+            req.body.oldPassword, 
+            existingUser.password
+        );
+        if (isOldPasswordCorrect) {
+            const newPassword = req.body.newPassword;
+            const user = await updatePasswordInDatabase(id, newPassword);
+            res.status(200).json(user);
+        } else {
+            res.status(406).json('Current password entered is incorrect.');
+        }
     }
 });
 
@@ -129,5 +112,5 @@ module.exports = {
     createUser, 
     signInUser, 
     updateUserEmail, 
-    checkPasswordMatches, 
+    updateUserPassword, 
 };
