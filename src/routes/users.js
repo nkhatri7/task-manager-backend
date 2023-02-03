@@ -6,10 +6,14 @@ const {
     updateUserName, 
     updateUserTasksOrder, 
 } = require('../controllers/users');
+const { authenticateRequest } = require('../middleware/auth');
 
-router.route('/:id').get(getUser);
-router.route('/:id').delete(deleteUser);
-router.route('/change-name/:id').patch(updateUserName);
-router.route('/tasks/:id').patch(updateUserTasksOrder);
+router.route('/').get((req, res) => authenticateRequest(req, res, getUser));
+router.route('/')
+    .delete((req, res) => authenticateRequest(req, res, deleteUser));
+router.route('/change-name/')
+.patch((req, res) => authenticateRequest(req, res, updateUserName));
+router.route('/tasks/')
+    .patch((req, res) => authenticateRequest(req, res, updateUserTasksOrder));
 
 module.exports = router;

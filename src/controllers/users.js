@@ -1,41 +1,35 @@
 const User = require('../models/User');
 const Task = require('../models/Task');
-const asyncWrapper = require('../middleware/async');
+const { closeUserSessions } = require('../utils/auth.utils');
 const { getRelevantUserDetails } = require('../middleware/auth');
 
 /**
- * Gets the user with a given ID if the user exists.
+ * Gets the user with the given session ID and session hash from the request.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const getUser = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    // Get user with the ID from the request
-    const user = await User.findById(id);
-    // If the user doesn't exist/isn't found, return an error
-    if (!user) {
-        res.status(404).json(`No user with the ID: ${id}`);
-    } else {
-        const relevantDetails = getRelevantUserDetails(user._doc);
-        res.status(200).json(relevantDetails);
-    }
-});
+const getUser = async (req, res, user) => {
+    const relevantDetails = getRelevantUserDetails(user._doc);
+    res.status(200).json(relevantDetails);
+};
 
 /**
- * Deletes the user with a given ID from the database.
+ * Deletes a user in the database with a given session ID and session hash from
+ * the request.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const deleteUser = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const user = await User.findById(id);
-    // If the user never existed, return an error
-    if (!user) {
-        res.status(404).json(`No user with the ID: ${id}`);
-    } else {
-        // Delete all tasks for user
-        deleteUserTasks(user.tasks);
-        // Delete user
-        await User.findByIdAndDelete(id);
-        res.status(200).send('User deleted');
-    }
-});
+const deleteUser = async (req, res, user) => {
+    // Delete all tasks for user
+    deleteUserTasks(user.tasks);
+    // Close all active user sessions
+    await closeUserSessions(user.id);
+    // Delete user
+    await User.findByIdAndDelete(user.id);
+    res.status(200).send('User deleted');
+};
 
 /**
  * Deletes all the tasks in the database associated with a user.
@@ -50,28 +44,26 @@ const deleteUserTasks = (userTasks) => {
 
 /**
  * Updates the user's name.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const updateUserName = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const user = await User.findByIdAndUpdate(id, req.body, {
+const updateUserName = async (req, res, user) => {
+    const updatedUser = await User.findByIdAndUpdate(user.id, req.body, {
         new: true,
         runValidators: true,
     });
-
-    if (!user) {
-        res.status(404).json(`No user with the ID: ${id}`);
-    } else {
-        const relevantDetails = getRelevantUserDetails(user._doc);
-        res.status(200).json(relevantDetails);
-    }
-});
+    res.status(200).json(getRelevantUserDetails(updatedUser._doc));
+};
 
 /**
  * Updates the order of the user's tasks.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const updateUserTasksOrder = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const user = await User.findByIdAndUpdate(id, {
+const updateUserTasksOrder = async (req, res, user) => {
+    const updatedUser = await User.findByIdAndUpdate(user.id, {
         $set: {
             tasks: req.body.tasks,
         }
@@ -79,13 +71,8 @@ const updateUserTasksOrder = asyncWrapper(async (req, res) => {
         new: true,
         runValidators: true,
     });
-    if (!user) {
-        res.status(404).json(`No user with the ID: ${id}`);
-    } else {
-        const relevantDetails = getRelevantUserDetails(user._doc);
-        res.status(200).json(relevantDetails);
-    }
-});
+    res.status(200).json(getRelevantUserDetails(updatedUser._doc));
+};
 
 module.exports = { 
     getUser, 

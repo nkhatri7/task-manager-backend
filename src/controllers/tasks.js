@@ -1,28 +1,26 @@
 const Task = require('../models/Task');
 const User = require('../models/User');
-const asyncWrapper = require('../middleware/async');
 const { getFormattedDateTime } = require('../utils/date.utils');
 const { getRelevantUserDetails } = require('../middleware/auth');
 
 /**
  * Creates a new task in the database.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const createTask = asyncWrapper(async (req, res) => {
-    const user = await User.findById(req.body.userId);
-    if (!user) {
-        res.status(404).json(`No user with ID: ${req.body.userId}`);
-    } else {
-        const creationDate = getFormattedDateTime(new Date());
-        req.body.createdAt = creationDate;
-        req.body.updatedAt = creationDate;
-        const task = await Task.create(req.body);
-        const updatedUser = await addTaskToUser(task.id, task.userId);
-        res.status(201).json({
-            task: task,
-            user: updatedUser
-        });
-    }
-});
+const createTask = async (req, res, user) => {
+    const creationDate = getFormattedDateTime(new Date());
+    req.body.createdAt = creationDate;
+    req.body.updatedAt = creationDate;
+    req.body.userId = user.id;
+    const task = await Task.create(req.body);
+    const updatedUser = await addTaskToUser(task.id, user.id);
+    res.status(201).json({
+        task: task,
+        user: updatedUser
+    });
+};
 
 /**
  * Adds the given task ID to the User with the given user ID.
@@ -40,52 +38,52 @@ const addTaskToUser = async (taskId, userId) => {
         new: true,
         runValidators: true,
     });
-
     return getRelevantUserDetails(user._doc);
 };
 
 /**
  * Gets all the tasks for the user with a given user ID from the database.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const getUserTasks = asyncWrapper(async (req, res) => {
-    // First, check if user exists
-    const { userId } = req.params;
-    const user = await User.findById(userId);
-    if (!user) {
-        res.status(404).json(`No user with ID: ${req.body.userId}`);
-    } else {
-        // Get the tasks
-        const tasks = await Task.find({ userId: userId });
-        res.status(200).json(tasks);
-    }
-});
+const getUserTasks = async (req, res, user) => {
+    const tasks = await Task.find({ userId: user.id });
+    res.status(200).json(tasks);
+};
 
 /**
  * Gets a task with a given ID from the database.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const getTask = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const task = await Task.findById(id);
-    if (!task) {
-        res.status(404).json(`No task with ID: ${req.body.id}`);
-    } else {
+const getTask = async (req, res, user) => {
+    const { taskId } = req.params;
+    const task = await Task.findById(taskId);
+    if (task) {
         res.status(200).json(task);
+    } else {
+        res.status(404).json('Task with given ID cannot be found.');
     }
-});
+};
 
 /**
  * Deletes the task with a given ID from the database.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const deleteTask = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const task = await Task.findByIdAndDelete(id);
-    if (!task) {
-        res.status(404).json(`No task with ID: ${req.body.id}`);
+const deleteTask = async (req, res, user) => {
+    const { taskId } = req.params;
+    const task = await Task.findByIdAndDelete(taskId);
+    if (task) {
+        const updatedUser = await removeTaskFromUser(taskId, user.id);
+        res.status(200).json(updatedUser);
     } else {
-        const user = await removeTaskFromUser(id, task.userId);
-        res.status(200).json(user);
+        res.status(404).json('Task with given ID cannot be found.');
     }
-});
+};
 
 /**
  * Removes the task ID from the User's array of tasks in the database
@@ -103,30 +101,31 @@ const removeTaskFromUser = async (taskId, userId) => {
         new: true,
         runValidators: true,
     });
-
     return getRelevantUserDetails(user._doc);
 };
 
 
 /**
  * Updates the task with a given ID in the database.
+ * @param {Express.Request} req The request
+ * @param {Express.Response} res The response
+ * @param {object} user The authenticated user's data
  */
-const updateTask = asyncWrapper(async (req, res) => {
-    const { id } = req.params;
-    const task = await Task.findByIdAndUpdate(id, {
+const updateTask = async (req, res, user) => {
+    const { taskId } = req.params;
+    const task = await Task.findByIdAndUpdate(taskId, {
         $set: req.body,
         updatedAt: getFormattedDateTime(new Date()),
     }, {
         new: true,
         runValidators: true,
     });
-
-    if (!task) {
-        res.status(404).json(`No task with ID: ${req.body.id}`);
-    } else {
+    if (task) {
         res.status(200).json(task);
+    } else {
+        res.status(404).json('Task with given ID cannot be found.');
     }
-});
+};
 
 module.exports = { 
     createTask, 
