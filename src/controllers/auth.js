@@ -106,7 +106,7 @@ const updateUserPassword = async (req, res, user) => {
     // Check if old password entered is correct
     const isOldPasswordCorrect = await comparePassword(
         req.body.oldPassword, 
-        existingUser.password
+        user.password
     );
     if (isOldPasswordCorrect) {
         const newPassword = req.body.newPassword;

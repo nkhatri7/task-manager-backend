@@ -40,7 +40,7 @@ const authenticateRequest = async (req, res, fn) => {
         if (user) {
             await fn(req, res, user);
         } else {
-            res.status(404).json('Invalid session or user not found.');
+            res.status(401).json('Invalid session.');
         }
     } catch (err) {
         res.status(500).json(err);
